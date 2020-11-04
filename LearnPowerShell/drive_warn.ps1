@@ -1,4 +1,4 @@
-#region script example
+#region script example, 
 
 param (
     [Parameter(Mandatory = $true)]
@@ -42,11 +42,13 @@ else {
 
 #get hard drive volume information and free space
 try {
-    if ($PSVersionTable.Platform -eq 'Unix') {
+    # if ($PSVersionTable.Platform -eq 'Unix') {
+    if ($PSVersionTable.Platform ) {
         $volume = Get-PSDrive -Name $Drive -ErrorAction Stop
         #verify volume actually exists
         if ($volume) {
             $total = $volume.Free + $volume.Used
+            $total ??= 1
             $percentFree = [int](($volume.Free / $total) * 100)
             Add-Content -Path $logFile -Value "[INFO] Percent Free: $percentFree%"
         }
@@ -58,7 +60,7 @@ try {
     else {
         $volume = Get-Volume -ErrorAction Stop | Where-Object { $_.DriveLetter -eq $Drive }
         #verify volume actually exists
-        if ($volume) {
+        if ($volume -and ($volume.Size -gt 0)) {
             $total = $volume.Size
             $percentFree = [int](($volume.SizeRemaining / $total) * 100)
             Add-Content -Path $logFile -Value "[INFO] Percent Free: $percentFree%"
